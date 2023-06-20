@@ -6,7 +6,7 @@ import Image from 'next/image'
 import Pusher from 'pusher-js';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-var pusher = new Pusher('563763d076d7d2e2fe88', {
+var pusher = new Pusher('6ba39b4dc9c7f2cfea15', {
   cluster: 'ap1'
 });
 

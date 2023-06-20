@@ -2,15 +2,23 @@
 import mysql, { Connection } from 'mysql2';
 import Pusher from 'pusher';
 
+const {
+    APP_ID: APP_ID,
+    KEY: KEY,
+    SECRET: SECRET,
+    CLUSTER: CLUSTER,
+} = process.env;
 
-// const Pusher = require("pusher");
+
+// const channels = new Channels({
+// });
 
 const pusher = new Pusher({
-  appId: "1621639",
-  key: "563763d076d7d2e2fe88",
-  secret: "d1dfde04e678b80afa55",
-  cluster: "ap1",
-  useTLS: true
+    appId : APP_ID!,
+    key : KEY!,
+    secret : SECRET!,
+    cluster : CLUSTER!,
+    useTLS: true
 });
 
 const pool = mysql.createPool({

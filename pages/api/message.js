@@ -1,5 +1,23 @@
 
 import { promisePool, pusher } from "./db"
+// import Channels from 'pusher';
+
+
+// const {
+//     APP_ID: APP_ID,
+//     KEY: KEY,
+//     SECRET: SECRET,
+//     CLUSTER: CLUSTER,
+// } = process.env;
+
+
+// const channels = new Channels({
+//     appId : APP_ID,
+//     key : KEY,
+//     secret : SECRET,
+//     cluster : CLUSTER,
+//     useTLS: true
+// });
 
 export default async function handler(req, res) {
     switch (req.method) {
@@ -25,7 +43,13 @@ const post = async (req, res) => {
     // console.log(req.body);
     const response = await promisePool.query('INSERT INTO message (username, content) VALUES (?,?)',
         [req.body.username, req.body.content]);
-
+    // pusher.trigger("my-channel", "new-message", {
+    //     username: req.body.username,
+    //     content: req.body.content,
+    //     created_at: new Date().toISOString()
+    // }, () => {
+    //     return res.status(200).send(response);
+    // });
     pusher.trigger("my-channel", "new-message", {
         username: req.body.username,
         content: req.body.content,
