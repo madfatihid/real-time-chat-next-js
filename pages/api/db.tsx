@@ -17,10 +17,10 @@ const pusher = new Pusher({
 // const connection: Connection = mysql.createConnection('mysql://pdwf9ml30x3yldintr3z:pscale_pw_Ib6jUvQXucS2xC9AESboc5vBTTC5JPeyxUILXUurefP@aws.connect.psdb.cloud/simplechat?ssl={"rejectUnauthorized":true}');
 
 const pool = mysql.createPool({
-    host: 'aws.connect.psdb.cloud',
-    user: 'pdwf9ml30x3yldintr3z',
-    password: 'pscale_pw_Ib6jUvQXucS2xC9AESboc5vBTTC5JPeyxUILXUurefP',
-    database: 'simplechat',
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
     waitForConnections: true,
     connectionLimit: 10,
     maxIdle: 10, // max idle connections, the default value is the same as `connectionLimit`
