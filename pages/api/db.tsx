@@ -13,9 +13,6 @@ const pusher = new Pusher({
   useTLS: true
 });
 
-
-// const connection: Connection = mysql.createConnection('mysql://pdwf9ml30x3yldintr3z:pscale_pw_Ib6jUvQXucS2xC9AESboc5vBTTC5JPeyxUILXUurefP@aws.connect.psdb.cloud/simplechat?ssl={"rejectUnauthorized":true}');
-
 const pool = mysql.createPool({
     host: process.env.HOST,
     user: process.env.USER,
@@ -34,5 +31,6 @@ const pool = mysql.createPool({
     }
 });
 const promisePool = pool.promise();
+
 
 export { promisePool, pusher };
