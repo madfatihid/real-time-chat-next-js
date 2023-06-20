@@ -2,7 +2,6 @@
 'use client'
 
 import axios from 'axios';
-import Image from 'next/image'
 import Pusher from 'pusher-js';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
@@ -16,7 +15,6 @@ function Profile(props: any) {
   for (var i = 0; i < name.length; i++) {
     hue += name.toLowerCase().charCodeAt(i) * 10;
   }
-  // console.log(hue);
   let acronym = name.split(/\s/).reduce((response: String, word: String) => response += word.slice(0, 1), '');
   let cut = acronym.substring(0, 2);
 
@@ -34,7 +32,6 @@ function Bubble(props: any) {
           <div className='font-semibold mb-1'>{props.username}</div>{props.content}</p>
       </div>
       <span className="text-xs text-gray-500 leading-none">{new Date(props.timestamp).toLocaleString('en-GB', {
-        // timeZone, 
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -46,7 +43,6 @@ function Bubble(props: any) {
 }
 
 function BubbleMe(props: any) {
-  // console.log(timeZone);
   return <div className="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end" id={props.id}>
     <div>
       <div className="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
@@ -54,7 +50,6 @@ function BubbleMe(props: any) {
           <div className='font-semibold mb-1'>{props.username}</div>{props.content}</p>
       </div>
       <span className="text-xs text-gray-500 leading-none">{new Date(props.timestamp).toLocaleString('en-GB', {
-        // timeZone,
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -74,7 +69,6 @@ export default function Home() {
   const [offset, setOffset] = useState(0);
   const [message, setMessage] = useState([]);
   const [loading, setLoading] = useState(false);
-  // const [scrollTop, setScrollTop] = useState(0);
   const scrollRef = useRef();
 
   const [firstchild, setFirstchild] = useState("");
@@ -86,15 +80,12 @@ export default function Home() {
     setLoading(true);
     axios.get(`/api/message?offset=${offset}`)
       .then(function (response) {
-        // handle success
         console.log(response.data);
         setFirstchild(scrollRef.current.querySelector("div:nth-child(1)").getAttribute("id"));
         setCurOffset(scrollRef.current.querySelector("div:nth-child(1)").offsetTop - scrollRef.current.scrollTop);
         setMessage(current => [...current, ...response.data]);
-        // firstchild.scrollIntoView();
       })
       .catch(function (error) {
-        // handle error
         console.log(error);
       })
       .finally(function () {
@@ -114,17 +105,14 @@ export default function Home() {
   const firstTime = async () => {
     axios.get(`/api/message?offset=${offset}`)
       .then(function (response) {
-        // handle success
         console.log(response.data);
 
         setMessage(current => [...current, ...response.data]);
       })
       .catch(function (error) {
-        // handle error
         console.log(error);
       })
       .finally(function () {
-        // always executed
         scrollRef.current.scrollTop = 100000;
       });
     setOffset(prevOffset => prevOffset + 10);
@@ -133,7 +121,6 @@ export default function Home() {
   const handleKeyDownContent = (event : any) => {
     if (event.code === "Enter" || event.code === "NumpadEnter") {
       event.preventDefault();
-      // console.log(content);
       handleSubmit(event);
     }
   };
@@ -141,7 +128,6 @@ export default function Home() {
   const handleKeyDownUsername = (event : any) => {
     if (event.code === "Enter" || event.code === "NumpadEnter") {
       event.preventDefault();
-      // console.log(content);
       submitUsername(event);
     }
   };
@@ -149,7 +135,6 @@ export default function Home() {
   useEffect(() => {
     var channel = pusher.subscribe('my-channel');
     channel.bind('new-message', function (data: any) {
-      // alert(JSON.stringify(data));
       console.log("new", data);
       setMessage(current => [data, ...current]);
       setOffset(prevOffset => prevOffset + 1);
@@ -164,18 +149,12 @@ export default function Home() {
       scrollRef.current.scrollTop = 10000;
       return;
     }
-    // console.log("offset", firstchild);
-    // scrollRef.current.scrollTop = scrollRef.current.querySelector("bubble_76").offsetTop - curOffset;
     scrollRef.current.scrollTop = scrollRef.current.querySelector("#" + firstchild).offsetTop - curOffset;
     setFirstchild("");
   }, [message])
 
-  // const [last, setLast] = useState('');
-
   const handleSubmit = (event: any) => {
-    // console.log(content);
     event.preventDefault();
-    // console.log(content);
     if(content === "") return;
     axios.post('/api/message', {
       username: username,
@@ -200,7 +179,6 @@ export default function Home() {
     if (username.length < 3) return;
     if (username.length > 20) return;
     setShowModal(false);
-    // setContent('');
   };
 
   return (
