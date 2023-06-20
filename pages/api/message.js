@@ -54,7 +54,9 @@ const post = async (req, res) => {
         username: req.body.username,
         content: req.body.content,
         created_at: new Date().toISOString()
-    });
+    }), () => {
+        return res.status(200).send(response);
+    };
 
-    return res.status(200).send(response);
+    // return res.status(200).send(response);
 };
