@@ -4,62 +4,9 @@
 import axios from 'axios';
 import Pusher from 'pusher-js';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-
-var pusher = new Pusher('6ba39b4dc9c7f2cfea15', {
-  cluster: 'ap1'
-});
-
-function Profile(props: any) {
-  let hue = 0;
-  let name = props.name;
-  for (var i = 0; i < name.length; i++) {
-    hue += name.toLowerCase().charCodeAt(i) * 10;
-  }
-  let acronym = name.split(/\s/).reduce((response: String, word: String) => response += word.slice(0, 1), '');
-  let cut = acronym.substring(0, 2);
-
-  return <div className="flex-shrink-0 relative border-2 border-white inline-flex items-center justify-center w-10 h-10 overflow-hidden rounded-full " style={{ backgroundColor: `hsl(${hue}, 100%, 40%)` }}>
-    <span className="font-medium text-white dark:text-white">{cut}</span>
-  </div>;
-}
-
-function Bubble(props: any) {
-  return <div className="flex w-full mt-2 space-x-3 max-w-xs" id={props.id}>
-    <Profile name={props.username} />
-    <div>
-      <div className="bg-slate-200 p-3 rounded-r-lg rounded-bl-lg">
-        <p className="text-sm">
-          <div className='font-semibold mb-1'>{props.username}</div>{props.content}</p>
-      </div>
-      <span className="text-xs text-gray-500 leading-none">{new Date(props.timestamp).toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      })}</span>
-    </div>
-  </div>;
-}
-
-function BubbleMe(props: any) {
-  return <div className="flex w-full mt-2 space-x-3 max-w-xs ml-auto justify-end" id={props.id}>
-    <div>
-      <div className="bg-blue-600 text-white p-3 rounded-l-lg rounded-br-lg">
-        <p className="text-sm">
-          <div className='font-semibold mb-1'>{props.username}</div>{props.content}</p>
-      </div>
-      <span className="text-xs text-gray-500 leading-none">{new Date(props.timestamp).toLocaleString('en-GB', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      })}</span>
-    </div>
-    <Profile name={props.username} />
-  </div>;
-}
+import { Tooltip } from 'react-tooltip'
+import { Profile, Bubble, BubbleMe, LoadingLeft, LoadingRight } from './component'
+import PulseLoader from "react-spinners/PulseLoader";
 
 export default function Home() {
 
@@ -73,7 +20,18 @@ export default function Home() {
 
   const [firstchild, setFirstchild] = useState("");
   const [curOffset, setCurOffset] = useState(0);
+  const [atBottom, setAtBottom] = useState(false);
 
+  const [members, setMembers] = useState([]);
+  const [typings, setTypings] = useState([]);
+
+  const getScrollPos = () => {
+    setFirstchild(scrollRef.current.querySelector("div:nth-child(1)").getAttribute("id"));
+    setCurOffset(scrollRef.current.querySelector("div:nth-child(1)").offsetTop - scrollRef.current.scrollTop);
+  }
+  const setScrollPos = () => {
+    scrollRef.current.scrollTop = scrollRef.current.querySelector("#" + firstchild).offsetTop - curOffset;
+  }
 
   const loadMore = async () => {
     if (loading) return;
@@ -81,9 +39,9 @@ export default function Home() {
     axios.get(`/api/message?offset=${offset}`)
       .then(function (response) {
         console.log(response.data);
-        setFirstchild(scrollRef.current.querySelector("div:nth-child(1)").getAttribute("id"));
-        setCurOffset(scrollRef.current.querySelector("div:nth-child(1)").offsetTop - scrollRef.current.scrollTop);
+        getScrollPos();
         setMessage(current => [...current, ...response.data]);
+        setOffset(prevOffset => prevOffset + 10);
       })
       .catch(function (error) {
         console.log(error);
@@ -91,11 +49,11 @@ export default function Home() {
       .finally(function () {
         setLoading(false);
       });
-    setOffset(prevOffset => prevOffset + 10);
   }
 
 
   const handleScroll = (event: any) => {
+    // console.log(scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight < 1)
     if (event.currentTarget.scrollTop === 0) {
       console.log("more!");
       loadMore();
@@ -118,44 +76,45 @@ export default function Home() {
     setOffset(prevOffset => prevOffset + 10);
 
   }
-  const handleKeyDownContent = (event : any) => {
+  const handleKeyDownContent = (event: any) => {
     if (event.code === "Enter" || event.code === "NumpadEnter") {
       event.preventDefault();
       handleSubmit(event);
     }
+    // if (content === "")
+    //   axios.post('/api/type', {
+    //     username: username,
+    //     type: "start"
+    //   });
+    // else
+    //   axios.post('/api/type', {
+    //     username: username,
+    //     type: "stop"
+    //   });
   };
 
-  const handleKeyDownUsername = (event : any) => {
+  const handleKeyDownUsername = (event: any) => {
     if (event.code === "Enter" || event.code === "NumpadEnter") {
       event.preventDefault();
       submitUsername(event);
     }
   };
-  
-  useEffect(() => {
-    var channel = pusher.subscribe('my-channel');
-    channel.bind('new-message', function (data: any) {
-      console.log("new", data);
-      setMessage(current => [data, ...current]);
-      setOffset(prevOffset => prevOffset + 1);
-    });
-    firstTime();
-
-  }, []);
-
 
   useLayoutEffect(() => {
-    if (firstchild === "") {
-      scrollRef.current.scrollTop = 10000;
+    // console.log(scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight);
+    if (message.length === 10 || atBottom) {
+      console.log("hey its true!");
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight + scrollRef.current.clientHeight;
+      setAtBottom(false);
       return;
     }
-    scrollRef.current.scrollTop = scrollRef.current.querySelector("#" + firstchild).offsetTop - curOffset;
+    if (firstchild !== "") setScrollPos();
     setFirstchild("");
   }, [message])
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
-    if(content === "") return;
+    if (content === "") return;
     axios.post('/api/message', {
       username: username,
       content: content
@@ -179,6 +138,72 @@ export default function Home() {
     if (username.length < 3) return;
     if (username.length > 20) return;
     setShowModal(false);
+
+    const pusher = new Pusher('6ba39b4dc9c7f2cfea15', {
+      userAuthentication: { endpoint: "/api/auth" },
+      channelAuthorization: {
+        endpoint: "/api/auth",
+        params: {
+          username: username
+        },
+      },
+      cluster: 'ap1'
+    });
+
+    var channel = pusher.subscribe('my-channel');
+    channel.bind('new-message', function (data: any) {
+      // console.log("new", data);
+      if (scrollRef && scrollRef.current.scrollHeight - scrollRef.current.scrollTop - scrollRef.current.clientHeight < 1)
+        setAtBottom(true);
+      getScrollPos();
+      setMessage(current => [data, ...current]);
+      setOffset(prevOffset => prevOffset + 1);
+    });
+    channel.bind('start-typing', function (data: any) {
+      setTypings(current => [...current, data.username]);
+    });
+    channel.bind('stop-typing', function (data: any) {
+      setTypings(current =>
+        current.filter(m => {
+          // 👇️ remove object that has id equal to 2
+          return m !== data.username;
+        }),
+      );
+    });
+
+    var presenceChannel = pusher.subscribe('presence-my-channel');
+    presenceChannel.bind("pusher:subscription_succeeded", (members) => {
+
+      // console.log(members);
+      let arrs = []
+      members.each((member) => {
+        // console.log(member);
+        arrs.push(member);
+      });
+      setMembers(current => [...arrs]);
+    });
+    presenceChannel.bind("pusher:member_added", (member) => {
+      setMembers(current => [...current, member]);
+      // console.log(member);
+    });
+    presenceChannel.bind("pusher:member_removed", (member) => {
+
+      setMembers(current =>
+        current.filter(m => {
+          // 👇️ remove object that has id equal to 2
+          return m.id !== member.id;
+        }),
+      );
+      setTypings(current =>
+        current.filter(m => {
+          // 👇️ remove object that has id equal to 2
+          return m !== member.id;
+        }),
+      );
+      // console.log(member);
+    });
+
+    firstTime();
   };
 
   return (
@@ -189,21 +214,19 @@ export default function Home() {
             <h1 className='font-semibold'>Real Time Chat</h1>
             <div>
               <div className="flex -space-x-4">
-                {/* <Profile name="Jason Derulo" />
-                <Profile name="AB" />
-                <Profile name="LD" /> */}
-                {/* <a className="flex items-center justify-center w-10 h-10 text-xs font-medium text-white bg-gray-700 border-2 border-white rounded-full hover:bg-gray-600 dark:border-gray-800" href="#">+99</a> */}
+                {
+                  [...members].slice(0, 5).map((m, index) => {
+                    return <><Profile tooltip="my-tooltip" name={m.id} key={m.id} id={m.id} /></>
+                  })
+                }
+                {
+                  (members.length > 5) && <div className="flex items-center justify-center w-10 h-10 text-xs font-medium text-white bg-gray-400 border-2 border-white rounded-full hover:bg-gray-300 dark:border-gray-800 z-10">+{members.length - 5}</div>
+                }
               </div>
             </div>
           </div>
           <div ref={scrollRef}
             onScroll={handleScroll} className="flex-auto p-4 bg-white overflow-auto">
-            {/* <Car username="Alice" content="Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum" />
-          <Car username="Agent" content="What?" />
-          <Car username="Alice" content="Lorem ipsum" />
-          <Car username="いびき" content="Lorem ipsum" />
-          <Car username="Alice" content="Lorem ipsum" />
-          <Car2 username="Alice" content="Lorem ipsum" /> */}
 
             {[...message].reverse().map((m, _) => {
               // console.log(m);
@@ -215,9 +238,12 @@ export default function Home() {
                 <Bubble username={m.username} content={m.content} timestamp={m.created_at} key={m.id} id={"bubble_" + m.id} />
               );
             })}
+            
+            {typings.filter(t => t !== username).length > 0 ? <LoadingLeft usernames={typings.filter(t => t !== username)} /> : null}
+            {/* <LoadingLeft username="Alice" /> */}
+            {typings.includes(username) ? <LoadingRight username={username} /> : null}
           </div>
           <div className="flex-none">
-
             <form onSubmit={handleSubmit}>
               {/* <label htmlFor="chat" className="sr-only">Your message</label> */}
               <div className="flex items-center px-3 py-3 bg-gray-50 dark:bg-gray-700">
@@ -230,8 +256,8 @@ export default function Home() {
             </form>
           </div>
         </div>
-
       </main >
+      <Tooltip id="my-tooltip" />
       {showModal ? (
         <>
           <div className="backdrop-blur-sm bg-black/30 grid place-content-center fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto h-full">

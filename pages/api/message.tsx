@@ -19,7 +19,7 @@ import { promisePool, pusher } from "./db"
 //     useTLS: true
 // });
 
-export default async function handler(req, res) {
+export default async function handler(req : any, res : any) {
     switch (req.method) {
         case "GET":
             return await get(req, res);
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     }
 }
 
-const get = async (req, res) => {
+const get = async (req : any, res : any) => {
     let offset = req.query.offset ?? 0;
     offset = parseInt(offset);
     // console.log(offset);
@@ -39,7 +39,7 @@ const get = async (req, res) => {
     return res.status(200).send(rows);
 }
 
-const post = async (req, res) => {
+const post = async (req : any, res : any) => {
     // console.log(req.body);
     const response = await promisePool.query('INSERT INTO message (username, content) VALUES (?,?)',
         [req.body.username, req.body.content]);
